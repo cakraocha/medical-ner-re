@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
-from torch.utils import data
 from torch.utils.data import Dataset
 
 from transformers import AutoTokenizer
+
+from sklearn import preprocessing
 
 from collections import OrderedDict
 
@@ -15,7 +16,7 @@ class Preprocess(Dataset):
     def __init__(self, datafile, maxlen) -> None:
         # split the dataset into data and labels
         self.sentences = []
-        self.labels = []
+        self.raw_labels = []
         sentence = []
         label = []
         # dataset contains spaces between sentences
@@ -27,12 +28,26 @@ class Preprocess(Dataset):
                     label.append(data_line[1])
                 else:
                     self.sentences.append(sentence)
-                    self.labels.append(label)
+                    self.raw_labels.append(label)
                     sentence = []
                     label = []
 
+        self.le = preprocessing.LabelEncoder()
+        label_list = [x for l in self.raw_labels for x in l]
+        self.le.fit(label_list)
+
+        self.labels = []
+        for l in self.raw_labels:
+            self.labels.append(self.le.transform(l).tolist())
+
         self.bert_tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.maxlen = maxlen
+
+    def get_labels(self):
+        return self.labels
+
+    def get_classes(self):
+        return self.le.classes_
 
     def __getitem__(self, index):
         index_sentence = ' '.join(self.sentences[index])
@@ -75,5 +90,7 @@ if __name__ == "__main__":
     # THIS IS DEBUGGING
     dataset = Preprocess('data/ner/train.tsv', 100)
     # print(dataset.__getitem__(2))
-    print(dataset.data_to_dict())
+    # print(dataset.data_to_dict())
+    # print(dataset.get_labels())
+    print(dataset.get_classes())
     # dataset.plot()
