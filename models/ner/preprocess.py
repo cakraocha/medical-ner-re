@@ -2,18 +2,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import torch
-from torch.utils.data import Dataset
-
-from transformers import AutoTokenizer
-
 from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 from collections import OrderedDict
 
-class Preprocess(Dataset):
+class Preprocess():
 
-    def __init__(self, datafile, maxlen) -> None:
+    def __init__(self, datafile, split=0.8) -> None:
         # split the dataset into data and labels
         self.sentences = []
         self.raw_labels = []
@@ -40,32 +36,31 @@ class Preprocess(Dataset):
         for l in self.raw_labels:
             self.labels.append(self.le.transform(l).tolist())
 
-        self.bert_tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
-        self.maxlen = maxlen
+        self.train_split = round(len(self.sentences) * split)
+        self.dev_split = len(self.sentences) - self.train_split
+
+        self.train_sentences = []
+        self.train_labels = []
+        self.dev_sentences = []
+        self.dev_labels = []
 
     def get_labels(self):
         return self.labels
+    
+    def get_sentences(self):
+        return self.sentences
 
     def get_classes(self):
         return self.le.classes_
+    
+    def train_dev_split(self):
+        sentences_shuffled, labels_shuffled = shuffle(self.sentences, self.labels)
+        self.train_sentences = sentences_shuffled[:self.train_split]
+        self.train_labels = labels_shuffled[:self.train_split]
+        self.dev_sentences = sentences_shuffled[self.train_split:]
+        self.dev_labels = labels_shuffled[self.train_split:]
 
-    def __getitem__(self, index):
-        index_sentence = ' '.join(self.sentences[index])
-
-        bert_tokens = self.bert_tokenizer(
-            index_sentence,
-            padding='max_length',
-            truncation=True,
-            max_length=self.maxlen
-        )
-
-        token_ids = torch.tensor(bert_tokens['input_ids'])
-        attn_mask = torch.tensor(bert_tokens['attention_mask'])
-        seg_ids = torch.tensor(bert_tokens['token_type_ids'])
-
-        label = self.labels[index]
-
-        return token_ids, attn_mask, seg_ids, label
+        return self.train_sentences, self.train_labels, self.dev_sentences, self.dev_labels
     
     def data_to_dict(self):
         counter = {}
@@ -88,9 +83,8 @@ class Preprocess(Dataset):
 
 if __name__ == "__main__":
     # THIS IS DEBUGGING
-    dataset = Preprocess('data/ner/train.tsv', 100)
-    # print(dataset.__getitem__(2))
+    dataset = Preprocess('data/ner/train.tsv')
     # print(dataset.data_to_dict())
     # print(dataset.get_labels())
-    print(dataset.get_classes())
+    # print(dataset.get_classes())
     # dataset.plot()
