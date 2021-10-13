@@ -1,12 +1,9 @@
-import pandas as pd
-import numpy as np
-
 import torch
 from torch.utils.data import Dataset
 
 from transformers import AutoTokenizer
 
-from preprocess import Preprocess
+from models.ner.preprocess import Preprocess
 
 class TorchDataset(Dataset):
 
@@ -38,6 +35,7 @@ class TorchDataset(Dataset):
         return {
             'ids': torch.tensor(bert_tokens['input_ids'], dtype=torch.long),
             'mask': torch.tensor(bert_tokens['attention_mask'], dtype=torch.long),
+            'seg_ids': torch.tensor(bert_tokens['token_type_ids'], dtype=torch.long),
             'tags': torch.tensor(label, dtype=torch.long)
         }
 
