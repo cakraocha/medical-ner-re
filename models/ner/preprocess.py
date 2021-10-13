@@ -39,9 +39,9 @@ class Preprocess():
         self.train_split = round(len(self.sentences) * split)
         self.dev_split = len(self.sentences) - self.train_split
 
-        self.train_sentences = []
+        self.train_data = []
         self.train_labels = []
-        self.dev_sentences = []
+        self.dev_data = []
         self.dev_labels = []
 
     def get_labels(self):
@@ -55,12 +55,12 @@ class Preprocess():
     
     def train_dev_split(self):
         sentences_shuffled, labels_shuffled = shuffle(self.sentences, self.labels)
-        self.train_sentences = sentences_shuffled[:self.train_split]
+        self.train_data = sentences_shuffled[:self.train_split]
         self.train_labels = labels_shuffled[:self.train_split]
-        self.dev_sentences = sentences_shuffled[self.train_split:]
+        self.dev_data = sentences_shuffled[self.train_split:]
         self.dev_labels = labels_shuffled[self.train_split:]
 
-        return self.train_sentences, self.train_labels, self.dev_sentences, self.dev_labels
+        return self.train_data, self.train_labels, self.dev_data, self.dev_labels
     
     def data_to_dict(self):
         counter = {}

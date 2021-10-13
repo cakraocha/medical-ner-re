@@ -11,11 +11,10 @@ class BERTforNER(nn.Module):
         self.dropout = nn.Dropout(0.2)
         self.linear = nn.Linear(768, out)
 
-    def forward(self, seq, attn_masks, labels):
+    def forward(self, seq, attn_masks):
         bert_output = self.bert_layer(
             seq,
-            attention_mask=attn_masks,
-            labels=labels
+            attention_mask=attn_masks
         )
         dropout = self.dropout(bert_output[0])
         output = self.linear(dropout)

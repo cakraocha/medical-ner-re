@@ -17,6 +17,9 @@ class TorchDataset(Dataset):
         self.bert_tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.maxlen = maxlen
 
+    def __len__(self):
+        return len(self.sentences)
+
     def __getitem__(self, index):
         index_sentence = ' '.join(self.sentences[index])
 
