@@ -1,18 +1,13 @@
-import numpy as np
-
 from models.ner import hyperparameter as hp
 from models.ner.preprocess import Preprocess
 from models.ner.torchdataset import TorchDataset
 from models.ner.model import BERTforNER
 
 import torch
-import torch.optim as optim
-from torch.utils.data import DataLoader
 
 from sklearn.metrics import f1_score
-
-import time
-from datetime import datetime
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
 
 def predict(datapath, modelpath):
     p_data = Preprocess(datapath, split=1)
@@ -25,6 +20,7 @@ def predict(datapath, modelpath):
     model = BERTforNER(num_labels)
     model.load_state_dict(torch.load(modelpath))
     model.to(device)
+    model.eval()
 
     preds = []
 
@@ -43,23 +39,26 @@ def predict(datapath, modelpath):
             tag = tag[:len(test_labels[idx])]
             # tag = p_data.le.inverse_transform(tag)
 
-            print(len(tag.tolist()))
-            print(len(test_labels[idx]))
-            print(len(test_set[idx]))
+            # print(tag.tolist())
+            # print(test_labels[idx])
+            # print(test_set[idx])
 
             preds.append(tag.tolist())
 
-            if idx == 3:
-                break
+            # if idx == 3:
+            #     break
+
     
     return preds, test_labels
 
 if __name__ == "__main__":
     datapath = 'data/ner/test.tsv'
-    modelpath = 'models/ner/saved_model/BERTforNER_2_13102021_231136.dat'
+    modelpath = 'models/ner/saved_model/BERTforNER_0_20211014_033516.dat'
     preds, test_labels = predict(datapath, modelpath)
     preds = [p for l in preds for p in l]
     test_labels = [tl for l in test_labels for tl in l]
     # print(len(preds))
     # print(len(test_labels))
-    # print(f1_score(test_labels, preds, average=None))
+    print(f1_score(test_labels, preds, average=None))
+    print(accuracy_score(test_labels, preds))
+    print(confusion_matrix(test_labels, preds, labels=[0, 1, 2]))

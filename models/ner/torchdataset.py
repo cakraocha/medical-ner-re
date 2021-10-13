@@ -13,7 +13,7 @@ class TorchDataset(Dataset):
 
         self.bert_tokenizer = BertTokenizer.from_pretrained(
             'bert-base-cased',
-            do_lower_case=True
+            do_lower_case=False
         )
         self.maxlen = maxlen
 
@@ -37,22 +37,22 @@ class TorchDataset(Dataset):
             ids.extend(inputs)
             target_tag.extend([tags[i]] * input_len)
 
-            # we do minus 2 because we need to add special tokens
-            ids = ids[:self.maxlen - 2]
-            target_tag = target_tag[:self.maxlen - 2]
+        # we do minus 2 because we need to add special tokens
+        ids = ids[:self.maxlen - 2]
+        target_tag = target_tag[:self.maxlen - 2]
 
-            ids = [101] + ids + [102]
-            target_tag = [0] + target_tag + [0]
+        ids = [101] + ids + [102]
+        target_tag = [0] + target_tag + [0]
 
-            mask = [1] * len(ids)
-            token_type_ids = [0] * len(ids)
+        mask = [1] * len(ids)
+        token_type_ids = [0] * len(ids)
 
-            padding_len = self.maxlen - len(ids)
+        padding_len = self.maxlen - len(ids)
 
-            ids = ids + ([0] * padding_len)
-            mask = mask + ([0] * padding_len)
-            token_type_ids = token_type_ids + ([0] * padding_len)
-            target_tag = target_tag + ([0] * padding_len)
+        ids = ids + ([0] * padding_len)
+        mask = mask + ([0] * padding_len)
+        token_type_ids = token_type_ids + ([0] * padding_len)
+        target_tag = target_tag + ([0] * padding_len)
 
         # extending label list to match the sentence padding
         # label = self.labels[index]

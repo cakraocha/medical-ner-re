@@ -3,7 +3,7 @@
 # If using GPU, you can set num_workers > 0
 # Otherwise (using CPU), set the num_workers = 0
 train_param = {
-    'batch_size': 16,
+    'batch_size': 8,
     'shuffle': True,
     'num_workers': 2
 }
@@ -14,9 +14,9 @@ dev_param = {
     'num_workers': 2
 }
 
-MAX_LEN = 200  # The length of additional padding for BERT
+MAX_LEN = 150  # The length of additional padding for BERT
 EPOCHS = 5
-LEARNING_RATE = 2e-05
+LEARNING_RATE = 3e-05
 TRAIN_DEV_SPLIT = 0.8
 GPU = 0  # Deciding which gpu to be used. 0 is the default value
 
@@ -39,7 +39,7 @@ def save_hp_to_json(traintime):
     hp_data['learning_rate'] = LEARNING_RATE
     hp_data['train_dev_split'] = TRAIN_DEV_SPLIT
     hp_data['gpu'] = GPU
-    savedate = traintime.strftime("%d%m%Y")
+    savedate = traintime.strftime("%Y%m%d")
     savetime = traintime.strftime("%H%M%S")
     with open(f'models/ner/saved_model/hyperparam_{savedate}_{savetime}.json', 'w') as outfile:
         json.dump(hp_data, outfile)
