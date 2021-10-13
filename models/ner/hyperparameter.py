@@ -14,7 +14,7 @@ dev_param = {
     'num_workers': 2
 }
 
-MAX_LEN = 125  # The length of additional padding for BERT
+MAX_LEN = 200  # The length of additional padding for BERT
 EPOCHS = 5
 LEARNING_RATE = 2e-05
 TRAIN_DEV_SPLIT = 0.8

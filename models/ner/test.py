@@ -1,0 +1,65 @@
+import numpy as np
+
+from models.ner import hyperparameter as hp
+from models.ner.preprocess import Preprocess
+from models.ner.torchdataset import TorchDataset
+from models.ner.model import BERTforNER
+
+import torch
+import torch.optim as optim
+from torch.utils.data import DataLoader
+
+from sklearn.metrics import f1_score
+
+import time
+from datetime import datetime
+
+def predict(datapath, modelpath):
+    p_data = Preprocess(datapath, split=1)
+    test_set = p_data.get_sentences()
+    test_labels = p_data.get_labels()
+    test_dataset = TorchDataset(test_set, test_labels, hp.MAX_LEN)
+
+    num_labels = len(p_data.get_classes())
+    device = torch.device("cuda")
+    model = BERTforNER(num_labels)
+    model.load_state_dict(torch.load(modelpath))
+    model.to(device)
+
+    preds = []
+
+    with torch.no_grad():
+        for idx, data in enumerate(test_dataset):
+            for k, v in data.items():
+                data[k] = v.to(device).unsqueeze(0)
+            # seq = data['ids'].to(device).unsqueeze(0)
+            # attn_mask = data['mask'].to(device).unsqueeze(0)
+            # seg_ids = data['seg_ids'].to(device).unsqueeze(0)
+            # labels = data['tags'].to(device).unsqueeze(0)
+
+            tag, _ = model(**data)
+
+            tag = tag.argmax(2).cpu().numpy().reshape(-1)
+            tag = tag[:len(test_labels[idx])]
+            # tag = p_data.le.inverse_transform(tag)
+
+            print(len(tag.tolist()))
+            print(len(test_labels[idx]))
+            print(len(test_set[idx]))
+
+            preds.append(tag.tolist())
+
+            if idx == 3:
+                break
+    
+    return preds, test_labels
+
+if __name__ == "__main__":
+    datapath = 'data/ner/test.tsv'
+    modelpath = 'models/ner/saved_model/BERTforNER_2_13102021_231136.dat'
+    preds, test_labels = predict(datapath, modelpath)
+    preds = [p for l in preds for p in l]
+    test_labels = [tl for l in test_labels for tl in l]
+    # print(len(preds))
+    # print(len(test_labels))
+    # print(f1_score(test_labels, preds, average=None))

@@ -27,15 +27,15 @@ class BERTforNER(nn.Module):
 
         return loss
 
-    def forward(self, seq, attn_masks, seg_ids, labels):
+    def forward(self, ids, mask, seg_ids, labels):
         o1, _ = self.bert_layer(
-            seq,
-            attention_mask=attn_masks,
+            ids,
+            attention_mask=mask,
             token_type_ids=seg_ids
         )  # we're taking the sequence, that is the o1
         bo_drop = self.bert_drop_1(o1)
         output = self.out(bo_drop)
 
-        loss = self.calculate_loss(output, labels, attn_masks, self.num_labels)
+        loss = self.calculate_loss(output, labels, mask, self.num_labels)
 
         return output, loss

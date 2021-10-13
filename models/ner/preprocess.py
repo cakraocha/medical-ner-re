@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing
-from sklearn.utils import shuffle
+# from sklearn.utils import shuffle
 
 from collections import OrderedDict
 
@@ -52,13 +52,12 @@ class Preprocess():
 
     def get_classes(self):
         return self.le.classes_
-    
+
     def train_dev_split(self):
-        sentences_shuffled, labels_shuffled = shuffle(self.sentences, self.labels)
-        self.train_data = sentences_shuffled[:self.train_split]
-        self.train_labels = labels_shuffled[:self.train_split]
-        self.dev_data = sentences_shuffled[self.train_split:]
-        self.dev_labels = labels_shuffled[self.train_split:]
+        self.train_data = self.sentences[:self.train_split]
+        self.train_labels = self.labels[:self.train_split]
+        self.dev_data = self.sentences[self.train_split:]
+        self.dev_labels = self.labels[self.train_split:]
 
         return self.train_data, self.train_labels, self.dev_data, self.dev_labels
     
