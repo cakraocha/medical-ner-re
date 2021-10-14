@@ -31,7 +31,7 @@ def predict(datapath, modelpath, use_biobert=False):
     preds = []
 
     with torch.no_grad():
-        for idx, data in enumerate(test_dataset):
+        for _, data in enumerate(test_dataset):
             for k, v in data.items():
                 data[k] = v.to(device).unsqueeze(0)
 
@@ -39,18 +39,8 @@ def predict(datapath, modelpath, use_biobert=False):
 
             probs = torch.sigmoid(tag.unsqueeze(-1))
             soft_probs = (probs > 0.5).long()
-            
-            # tag = p_data.le.inverse_transform(tag)
-
-            # print(tag.tolist())
-            # print(test_labels[idx])
-            # print(test_set[idx])
 
             preds.append(soft_probs.squeeze().item())
-
-            # if idx == 3:
-            #     break
-
     
     return preds, test_labels
 

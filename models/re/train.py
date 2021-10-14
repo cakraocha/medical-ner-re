@@ -9,6 +9,8 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from sklearn.metrics import f1_score
+
 import time
 from datetime import datetime
 
@@ -36,9 +38,18 @@ def prepare_training(data_path, use_biobert=False, gpu_enabled=True):
 
     return train_loader, dev_loader, model, opti
 
+def get_acc_from_logits(logits, labels):
+    probs = torch.sigmoid(logits.unsqueeze(-1))
+    soft_probs = (probs > 0.5).long()
+    acc = (soft_probs.squeeze() == labels).float().mean()
+
+    return acc
+
 def evaluate(model, dataloader, gpu):
     model.eval()
 
+    preds = []
+    labels = []
     final_loss = 0
 
     with torch.no_grad():
@@ -46,14 +57,23 @@ def evaluate(model, dataloader, gpu):
             for k, v in data.items():
                 data[k] = v.cuda(gpu)
 
-            _, loss = model(**data)
+            logits, loss = model(**data)
+
+            probs = torch.sigmoid(logits.unsqueeze(-1))
+            soft_probs = (probs > 0.5).long()
+            for prob in soft_probs:
+                preds.append(prob.squeeze().item())
+            for label in data['labels']:
+                labels.append(label.float().item())
+
             final_loss += loss.item()
-    
-    return final_loss
+
+    return f1_score(labels, preds), final_loss 
 
 def train(model, opti, train_loader, dev_loader, max_ep, gpu):
     hp.save_hp_to_json(datetime.now())
     best_loss = np.inf
+    best_f1 = 0
     st = time.time()
     model.train()
     for ep in range(max_ep):
@@ -67,7 +87,7 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
                 data[k] = v.cuda(gpu)
 
             # obtaining loss from model
-            _, loss = model(**data)
+            logits, loss = model(**data)
 
             # backpropagation
             loss.backward()
@@ -78,16 +98,17 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
             final_loss += loss.item()
 
             if it % 100 == 0:
-                print(f"Iteration {it} of epoch {ep} complete. Loss: {loss.item()}; Time taken (s): {time.time() - st}")
+                acc = get_acc_from_logits(logits, data['labels'])
+                print(f"Iteration {it} of epoch {ep} complete. Acc: {acc}; Loss: {loss.item()}; Time taken (s): {time.time() - st}")
                 st = time.time()
 
-        dev_loss = evaluate(model, dev_loader, gpu)
-        print(f"Epoch {ep} complete. Dev loss: {dev_loss}")
+        dev_f1, dev_loss = evaluate(model, dev_loader, gpu)
+        print(f"Epoch {ep} complete. Dev F1: {dev_f1}; Dev loss: {dev_loss}")
         now_date = datetime.now().strftime("%Y%m%d")
         now_time = datetime.now().strftime("%H%M%S")
-        if dev_loss < best_loss:
-            print(f"Best dev loss improved from {best_loss} to {dev_loss}")
-            best_loss = dev_loss
+        if dev_f1 > best_f1:
+            print(f"Best f1 score improved from {best_f1} to {dev_f1}")
+            best_f1 = dev_f1
             print("Saving model..")
             torch.save(
                 model.state_dict(),
