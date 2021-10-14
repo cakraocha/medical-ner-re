@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
-from transformers import BertTokenizer, AutoTokenizer
+from transformers import BertTokenizer
 
 from models.ner.preprocess import Preprocess
 
@@ -66,11 +66,6 @@ class TorchDataset(Dataset):
         token_type_ids = token_type_ids + ([0] * padding_len)
         target_tag = target_tag + ([0] * padding_len)
 
-        # extending label list to match the sentence padding
-        # label = self.labels[index]
-        # label.extend([2] * self.maxlen)
-        # label = label[:self.maxlen]
-
         return {
             'ids': torch.tensor(ids, dtype=torch.long),
             'mask': torch.tensor(mask, dtype=torch.long),
@@ -83,6 +78,5 @@ if __name__ == "__main__":
     p_data = Preprocess('data/ner/train.tsv')
     train_set, train_label, dev_set, dev_label = p_data.train_dev_split()
     train_dataset = TorchDataset(train_set, train_label, 125, use_biobert=True)
-    # print(dataset.__getitem__(1))
     test_data = train_dataset.__getitem__(1)
     print(test_data['ids'])

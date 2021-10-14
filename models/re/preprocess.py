@@ -14,7 +14,7 @@ class Preprocess():
                 data_line = line.strip().split('\t')
                 if data_line[0] != '':
                     self.sentences.append(data_line[0])
-                    self.labels.append(data_line[1])
+                    self.labels.append(int(data_line[1]))
 
         self.train_split = round(len(self.sentences) * split)
         self.dev_split = len(self.sentences) - self.train_split
@@ -68,7 +68,4 @@ class Preprocess():
 if __name__ == "__main__":
     # THIS IS DEBUGGING
     dataset = Preprocess('data/re/train.tsv')
-    # print(dataset.data_to_dict())
-    # print(dataset.get_labels())
-    # print(dataset.get_classes())
     dataset.plot_word_count()
