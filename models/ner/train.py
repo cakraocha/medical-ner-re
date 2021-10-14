@@ -3,7 +3,7 @@ import numpy as np
 from models.ner import hyperparameter as hp
 from models.ner.preprocess import Preprocess
 from models.ner.torchdataset import TorchDataset
-from models.ner.model import BERTforNER
+from models.ner.model import BERTforNER, BIOBERTforNER
 
 import torch
 import torch.optim as optim
@@ -12,17 +12,25 @@ from torch.utils.data import DataLoader
 import time
 from datetime import datetime
 
-def prepare_training(data_path, gpu_enabled=True):
+def prepare_training(data_path, use_biobert=False, gpu_enabled=True):
     p_data = Preprocess(data_path)
     train_set, train_labels, dev_set, dev_labels = p_data.train_dev_split()
-    train_dataset = TorchDataset(train_set, train_labels, hp.MAX_LEN)
-    dev_dataset = TorchDataset(dev_set, dev_labels, hp.MAX_LEN)
+    train_dataset = TorchDataset(train_set, train_labels, hp.MAX_LEN, use_biobert=use_biobert)
+    dev_dataset = TorchDataset(dev_set, dev_labels, hp.MAX_LEN, use_biobert=use_biobert)
 
     train_loader = DataLoader(train_dataset, **hp.train_param)
     dev_loader = DataLoader(dev_dataset, **hp.dev_param)
 
     num_labels = len(p_data.get_classes())
-    model = BERTforNER(num_labels)
+    if use_biobert:
+        model = BIOBERTforNER(
+            hp.BIOBERT_CONFIG,
+            hp.BIOBERT_MODEL,
+            hp.DEVICE,
+            num_labels
+        )
+    else:
+        model = BERTforNER(num_labels)
     if gpu_enabled:
         model.cuda(hp.GPU)
 
@@ -45,6 +53,7 @@ def evaluate(model, dataloader, gpu):
             # labels = data['tags'].cuda(gpu)
 
             _, loss = model(**data)
+            # loss = model(**data)
             final_loss += loss.item()
     
     return final_loss
@@ -70,6 +79,7 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
 
             # obtaining loss from model
             _, loss = model(**data)
+            # loss = model(**data)
 
             # backpropagation
             loss.backward()
@@ -97,5 +107,5 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
             )
 
 if __name__ == "__main__":
-    train_loader, dev_loader, model, opti = prepare_training("data/ner/train.tsv")
+    train_loader, dev_loader, model, opti = prepare_training("data/ner/train.tsv", use_biobert=True)
     train(model, opti, train_loader, dev_loader, hp.EPOCHS, hp.GPU)

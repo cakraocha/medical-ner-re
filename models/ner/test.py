@@ -1,7 +1,7 @@
 from models.ner import hyperparameter as hp
 from models.ner.preprocess import Preprocess
 from models.ner.torchdataset import TorchDataset
-from models.ner.model import BERTforNER
+from models.ner.model import BERTforNER, BIOBERTforNER
 
 import torch
 
@@ -9,7 +9,7 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 
-def predict(datapath, modelpath):
+def predict(datapath, modelpath, use_biobert=False):
     p_data = Preprocess(datapath, split=1)
     test_set = p_data.get_sentences()
     test_labels = p_data.get_labels()
@@ -17,7 +17,15 @@ def predict(datapath, modelpath):
 
     num_labels = len(p_data.get_classes())
     device = torch.device("cuda")
-    model = BERTforNER(num_labels)
+    if use_biobert:
+        model = BIOBERTforNER(
+            hp.BIOBERT_CONFIG,
+            hp.BIOBERT_MODEL,
+            device,
+            num_labels
+        )
+    else:
+        model = BERTforNER(num_labels)
     model.load_state_dict(torch.load(modelpath))
     model.to(device)
     model.eval()
@@ -53,8 +61,8 @@ def predict(datapath, modelpath):
 
 if __name__ == "__main__":
     datapath = 'data/ner/test.tsv'
-    modelpath = 'models/ner/saved_model/BERTforNER_0_20211014_033516.dat'
-    preds, test_labels = predict(datapath, modelpath)
+    modelpath = 'models/ner/saved_model/BERTforNER_0_20211014_201754.dat'
+    preds, test_labels = predict(datapath, modelpath, use_biobert=True)
     preds = [p for l in preds for p in l]
     test_labels = [tl for l in test_labels for tl in l]
     # print(len(preds))

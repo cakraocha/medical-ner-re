@@ -19,6 +19,10 @@ EPOCHS = 5
 LEARNING_RATE = 3e-05
 TRAIN_DEV_SPLIT = 0.8
 GPU = 0  # Deciding which gpu to be used. 0 is the default value
+DEVICE = 'cuda'
+BIOBERT_CONFIG = 'biobert_v1.1_pubmed/config.json'
+BIOBERT_MODEL = 'biobert_v1.1_pubmed/pytorch_model.bin'
+BIOBERT_VOCAB = 'biobert_v1.1_pubmed/vocab.txt'
 
 import json
 

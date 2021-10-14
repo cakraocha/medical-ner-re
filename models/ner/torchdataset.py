@@ -1,13 +1,13 @@
 import torch
 from torch.utils.data import Dataset
 
-from transformers import BertTokenizer
+from transformers import BertTokenizer, AutoTokenizer
 
 from models.ner.preprocess import Preprocess
 
 class TorchDataset(Dataset):
 
-    def __init__(self, datafile, labelfile, maxlen) -> None:
+    def __init__(self, datafile, labelfile, maxlen, use_biobert=False) -> None:
         self.sentences = datafile
         self.labels = labelfile
 
@@ -15,6 +15,12 @@ class TorchDataset(Dataset):
             'bert-base-cased',
             do_lower_case=False
         )
+        self.biobert_tokenizer = BertTokenizer(
+            vocab_file='biobert_v1.1_pubmed/vocab.txt',
+            do_lower_case=False
+        )
+
+        self.use_biobert = use_biobert
         self.maxlen = maxlen
 
     def __len__(self):
@@ -28,10 +34,16 @@ class TorchDataset(Dataset):
         target_tag = []
 
         for i, s in enumerate(sentence):
-            inputs = self.bert_tokenizer.encode(
-                s,
-                add_special_tokens=False
-            )
+            if self.use_biobert:
+                inputs = self.biobert_tokenizer.encode(
+                    s,
+                    add_special_tokens=False
+                )
+            else:
+                inputs = self.bert_tokenizer.encode(
+                    s,
+                    add_special_tokens=False
+                )
             # we want to make all of inputs the same length
             input_len = len(inputs)
             ids.extend(inputs)
@@ -70,7 +82,7 @@ if __name__ == "__main__":
     # THIS IS DEBUGGING
     p_data = Preprocess('data/ner/train.tsv')
     train_set, train_label, dev_set, dev_label = p_data.train_dev_split()
-    train_dataset = TorchDataset(train_set, train_label, 125)
+    train_dataset = TorchDataset(train_set, train_label, 125, use_biobert=True)
     # print(dataset.__getitem__(1))
     test_data = train_dataset.__getitem__(1)
     print(test_data['ids'])
