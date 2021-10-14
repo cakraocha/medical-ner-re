@@ -1,3 +1,5 @@
+from models.ner import hyperparameter as hp
+
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing
@@ -13,6 +15,7 @@ class Preprocess():
         sentence = []
         label = []
         # dataset contains spaces between sentences
+        # spaces denoted by ''
         with open(datafile, 'r') as f:
             for line in f:
                 data_line = line.strip().split('\t')
@@ -25,6 +28,7 @@ class Preprocess():
                     sentence = []
                     label = []
 
+        # encode tags of [B, I, O]
         self.le = preprocessing.LabelEncoder()
         label_list = [x for l in self.raw_labels for x in l]
         self.le.fit(label_list)
@@ -33,6 +37,7 @@ class Preprocess():
         for l in self.raw_labels:
             self.labels.append(self.le.transform(l).tolist())
 
+        # variable for dev-train split
         self.train_split = round(len(self.sentences) * split)
         self.dev_split = len(self.sentences) - self.train_split
 
@@ -59,6 +64,10 @@ class Preprocess():
         return self.train_data, self.train_labels, self.dev_data, self.dev_labels
     
     def data_to_dict(self):
+        """
+        A function to count words in a sentence and convert to dictionary.
+        Format: {<len(sentence)>: <total>}
+        """
         counter = {}
         for data in self.sentences:
             if len(data) not in counter:
@@ -70,6 +79,10 @@ class Preprocess():
         return ordered_counter
     
     def plot(self):
+        """
+        A function to plot the converted dictionary data.
+        This function acts as a exploratory phase.
+        """
         counter = self.data_to_dict()
 
         plt.bar(range(len(counter)), list(counter.values()), align='center')
@@ -79,7 +92,7 @@ class Preprocess():
 
 if __name__ == "__main__":
     # THIS IS DEBUGGING
-    dataset = Preprocess('data/ner/train.tsv')
+    dataset = Preprocess(hp.TRAIN_DATA_DIR)
     # print(dataset.data_to_dict())
     # print(dataset.get_labels())
     # print(dataset.get_classes())

@@ -36,37 +36,26 @@ def predict(datapath, modelpath, use_biobert=False):
         for idx, data in enumerate(test_dataset):
             for k, v in data.items():
                 data[k] = v.to(device).unsqueeze(0)
-            # seq = data['ids'].to(device).unsqueeze(0)
-            # attn_mask = data['mask'].to(device).unsqueeze(0)
-            # seg_ids = data['seg_ids'].to(device).unsqueeze(0)
-            # labels = data['tags'].to(device).unsqueeze(0)
 
             tag, _ = model(**data)
 
             tag = tag.argmax(2).cpu().numpy().reshape(-1)
             tag = tag[:len(test_labels[idx])]
-            # tag = p_data.le.inverse_transform(tag)
-
-            # print(tag.tolist())
-            # print(test_labels[idx])
-            # print(test_set[idx])
 
             preds.append(tag.tolist())
 
-            # if idx == 3:
-            #     break
-
-    
     return preds, test_labels
 
 if __name__ == "__main__":
     datapath = 'data/ner/test.tsv'
     modelpath = 'models/ner/saved_model/BERTforNER_0_20211014_201754.dat'
-    preds, test_labels = predict(datapath, modelpath, use_biobert=True)
+    preds, test_labels = predict(
+        datapath,
+        modelpath,
+        use_biobert=False
+    )  # CHANGE THIS TO SWITCH MODELS
     preds = [p for l in preds for p in l]
     test_labels = [tl for l in test_labels for tl in l]
-    # print(len(preds))
-    # print(len(test_labels))
     print(f1_score(test_labels, preds, average=None))
     print(accuracy_score(test_labels, preds))
     print(confusion_matrix(test_labels, preds, labels=[0, 1, 2]))

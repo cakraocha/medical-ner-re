@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 
 from transformers import BertTokenizer
 
+from models.ner import hyperparameter as hp
 from models.ner.preprocess import Preprocess
 
 class TorchDataset(Dataset):
@@ -16,7 +17,7 @@ class TorchDataset(Dataset):
             do_lower_case=False
         )
         self.biobert_tokenizer = BertTokenizer(
-            vocab_file='biobert_v1.1_pubmed/vocab.txt',
+            vocab_file=hp.BIOBERT_VOCAB,
             do_lower_case=False
         )
 
@@ -75,7 +76,7 @@ class TorchDataset(Dataset):
 
 if __name__ == "__main__":
     # THIS IS DEBUGGING
-    p_data = Preprocess('data/ner/train.tsv')
+    p_data = Preprocess(hp.TRAIN_DATA_DIR)
     train_set, train_label, dev_set, dev_label = p_data.train_dev_split()
     train_dataset = TorchDataset(train_set, train_label, 125, use_biobert=True)
     test_data = train_dataset.__getitem__(1)

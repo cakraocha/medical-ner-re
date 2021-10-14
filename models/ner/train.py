@@ -47,13 +47,8 @@ def evaluate(model, dataloader, gpu):
         for _, data in enumerate(dataloader):
             for k, v in data.items():
                 data[k] = v.cuda(gpu)
-            # seq = data['ids'].cuda(gpu)
-            # attn_mask = data['mask'].cuda(gpu)
-            # seg_ids = data['seg_ids'].cuda(gpu)
-            # labels = data['tags'].cuda(gpu)
 
             _, loss = model(**data)
-            # loss = model(**data)
             final_loss += loss.item()
     
     return final_loss
@@ -72,14 +67,9 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
             # convert to cuda tensors
             for k, v in data.items():
                 data[k] = v.cuda(gpu)
-            # seq = data['ids'].cuda(gpu)
-            # attn_mask = data['mask'].cuda(gpu)
-            # seg_ids = data['seg_ids'].cuda(gpu)
-            # labels = data['tags'].cuda(gpu)
 
             # obtaining loss from model
             _, loss = model(**data)
-            # loss = model(**data)
 
             # backpropagation
             loss.backward()
@@ -107,5 +97,8 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
             )
 
 if __name__ == "__main__":
-    train_loader, dev_loader, model, opti = prepare_training("data/ner/train.tsv", use_biobert=True)
+    train_loader, dev_loader, model, opti = prepare_training(
+        hp.TRAIN_DATA_DIR,
+        use_biobert=False
+    )  # CHANGE THIS TO SWITCH MODELS
     train(model, opti, train_loader, dev_loader, hp.EPOCHS, hp.GPU)
