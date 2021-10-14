@@ -1,0 +1,7 @@
+pytorch
+torchvision
+torchaudio
+transformers
+numpy
+sklearn
+matplotlib
