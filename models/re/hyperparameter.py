@@ -1,5 +1,7 @@
 # This file acts as a constant for hyperparameter tuning and other config
 
+import os
+
 # If using GPU, you can set num_workers > 0
 # Otherwise (using CPU), set the num_workers = 0
 train_param = {
@@ -23,9 +25,12 @@ DEVICE = 'cuda'
 BIOBERT_CONFIG = 'biobert_v1.1_pubmed/config.json'
 BIOBERT_MODEL = 'biobert_v1.1_pubmed/pytorch_model.bin'
 BIOBERT_VOCAB = 'biobert_v1.1_pubmed/vocab.txt'
+SAVED_MODEL_DIR = 'models/re/saved_model'
+CHECK_FOLDER = os.path.isdir(SAVED_MODEL_DIR)
+TRAIN_DATA_DIR = 'data/re/train.tsv'
+TEST_DATA_DIR = 'data/re/test.tsv'
 
 import json
-import os
 
 def save_hp_to_json(traintime):
     """
@@ -46,8 +51,7 @@ def save_hp_to_json(traintime):
     hp_data['gpu'] = GPU
     savedate = traintime.strftime("%Y%m%d")
     savetime = traintime.strftime("%H%M%S")
-    SAVED_MODEL_DIR = 'models/re/saved_model'
-    CHECK_FOLDER = os.path.isdir(SAVED_MODEL_DIR)
+
     if not CHECK_FOLDER:
         os.makedirs(SAVED_MODEL_DIR)
     with open(f'models/re/saved_model/hyperparam_{savedate}_{savetime}.json', 'w') as outfile:
