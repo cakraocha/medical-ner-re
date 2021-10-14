@@ -95,5 +95,5 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
             )
 
 if __name__ == "__main__":
-    train_loader, dev_loader, model, opti = prepare_training(hp.TRAIN_DATA_DIR, use_biobert=False)
+    train_loader, dev_loader, model, opti = prepare_training(hp.TRAIN_DATA_DIR, use_biobert=True)
     train(model, opti, train_loader, dev_loader, hp.EPOCHS, hp.GPU)

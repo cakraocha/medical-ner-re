@@ -56,8 +56,8 @@ def predict(datapath, modelpath, use_biobert=False):
 
 if __name__ == "__main__":
     datapath = 'data/re/test.tsv'
-    modelpath = 'models/re/saved_model/BERTforNER_2_20211014_232133.dat'
-    preds, test_labels = predict(datapath, modelpath, use_biobert=False)
+    modelpath = 'models/re/saved_model/BERTforNER_2_20211015_000759.dat'
+    preds, test_labels = predict(datapath, modelpath, use_biobert=True)
     print(f1_score(test_labels, preds, average='weighted'))
     print(accuracy_score(test_labels, preds))
     print(confusion_matrix(test_labels, preds, labels=[0, 1]))

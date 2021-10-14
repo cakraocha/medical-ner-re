@@ -12,20 +12,6 @@ class BERTforNER(nn.Module):
         self.bert_drop_1 = nn.Dropout(0.3)
         self.out = nn.Linear(768, 1)
 
-    # def calculate_loss(self, output, target, mask, num_labels):
-    #     criterion = nn.CrossEntropyLoss()
-    #     # below code is to calculate only the ones with mask 1
-    #     active_loss = mask.view(-1) == 1
-    #     active_logits = output.view(-1, num_labels)
-    #     active_labels = torch.where(
-    #         active_loss,
-    #         target.view(-1),
-    #         torch.tensor(criterion.ignore_index).type_as(target)
-    #     )
-    #     loss = criterion(active_logits, active_labels)
-
-    #     return loss
-
     def forward(self, ids, mask, seg_ids, labels):
         o1 = self.bert_layer(
             ids,
@@ -78,10 +64,13 @@ class BIOBERTforNER(nn.Module):
     def forward(self, ids, mask, seg_ids, labels):
         o1 = self.biobert_layer(
             ids,
-            attention_mask=mask
+            attention_mask=mask,
+            token_type_ids=seg_ids
         )
-        o1 = o1[0]  # getting the logits
-        out = self.dropout(o1)
+        # print(o1)
+        cont_reps = o1.last_hidden_state
+        cls_rep = cont_reps[:, 0]
+        out = self.dropout(cls_rep)
         out = self.output(out)
 
         criterion = nn.BCEWithLogitsLoss()
