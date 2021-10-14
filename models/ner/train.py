@@ -99,6 +99,6 @@ def train(model, opti, train_loader, dev_loader, max_ep, gpu):
 if __name__ == "__main__":
     train_loader, dev_loader, model, opti = prepare_training(
         hp.TRAIN_DATA_DIR,
-        use_biobert=False
+        use_biobert=True
     )  # CHANGE THIS TO SWITCH MODELS
     train(model, opti, train_loader, dev_loader, hp.EPOCHS, hp.GPU)

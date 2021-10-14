@@ -48,11 +48,11 @@ def predict(datapath, modelpath, use_biobert=False):
 
 if __name__ == "__main__":
     datapath = 'data/ner/test.tsv'
-    modelpath = 'models/ner/saved_model/BERTforNER_0_20211014_201754.dat'
+    modelpath = 'models/ner/saved_model/BERTforNER_0_20211015_032943.dat'
     preds, test_labels = predict(
         datapath,
         modelpath,
-        use_biobert=False
+        use_biobert=True
     )  # CHANGE THIS TO SWITCH MODELS
     preds = [p for l in preds for p in l]
     test_labels = [tl for l in test_labels for tl in l]
