@@ -1,3 +1,5 @@
+from models.re import hyperparameter as hp
+
 import matplotlib.pyplot as plt
 
 from collections import OrderedDict
@@ -9,12 +11,19 @@ class Preprocess():
         self.sentences = []
         self.labels = []
         # iterate through the file
+        # structure of test file and train file are different
         with open(datafile, 'r') as f:
+            if datafile == hp.TEST_DATA_DIR:
+                next(f)
             for line in f:
                 data_line = line.strip().split('\t')
                 if data_line[0] != '':
-                    self.sentences.append(data_line[0])
-                    self.labels.append(int(data_line[1]))
+                    if datafile == hp.TRAIN_DATA_DIR:
+                        self.sentences.append(data_line[0])
+                        self.labels.append(int(data_line[1]))
+                    else:
+                        self.sentences.append(data_line[1])
+                        self.labels.append(int(data_line[2]))
 
         self.train_split = round(len(self.sentences) * split)
         self.dev_split = len(self.sentences) - self.train_split
